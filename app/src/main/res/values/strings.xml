@@ -1,0 +1,7 @@
+<resources>
+    <string name="app_name">webchat</string>
+    <string name="tv_author_name">Ваше сообщение (%s)</string>
+    <string name="edit_message_hint">Введите сообщение...</string>
+    <string name="btn_send_text">Отправить</string>
+
+</resources>
