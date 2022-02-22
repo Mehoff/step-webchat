@@ -4,6 +4,7 @@ import android.util.Log;
 import com.step.webchat.Message;
 
 import org.json.JSONArray;
+import org.json.JSONException;
 import org.json.JSONObject;
 
 import java.io.DataOutputStream;
@@ -47,8 +48,8 @@ public class MessagesAPI {
 
                 Message msg = new Message(
                         obj.getInt("id"),
-                        obj.getString("author"),
                         obj.getString("text"),
+                        obj.getString("author"),
                         obj.getString("moment")
                 );
                 messages.add(msg);
@@ -61,9 +62,9 @@ public class MessagesAPI {
         }
     }
 
-    public boolean sendMessage(String author, String message){
+    public ArrayList<Message> sendMessage(String author, String message){
         if(author.length() <= 1 || message.length() <= 0){
-            return false;
+            return null;
         }
 
         StringBuilder sb = new StringBuilder();
@@ -92,15 +93,36 @@ public class MessagesAPI {
             con.disconnect();
             contentBuffer = new String(sb.toString().getBytes(StandardCharsets.ISO_8859_1), StandardCharsets.UTF_8);
             Log.i("sendMessage", contentBuffer);
-            return true;
+
+            JSONObject jsonResponse = new JSONObject(contentBuffer);
+            JSONArray messagesJsonArray = jsonResponse.getJSONArray("data");
+
+            messages.clear();
+            for(int i = 0; i < messagesJsonArray.length(); ++i){
+                JSONObject obj = messagesJsonArray.getJSONObject(i);
+
+                Message msg = new Message(
+                        obj.getInt("id"),
+                        obj.getString("text"),
+                        obj.getString("author"),
+                        obj.getString("moment")
+                );
+                messages.add(msg);
+            }
+
+            return messages;
+
         } catch (MalformedURLException e) {
             e.printStackTrace();
             Log.e("sendMessage", e.getMessage());
-            return false;
+            return null;
         } catch (IOException e) {
             Log.e("sendMessage", e.getMessage());
             e.printStackTrace();
-            return false;
+            return null;
+        } catch (JSONException e) {
+            e.printStackTrace();
+            return null;
         }
     }
 

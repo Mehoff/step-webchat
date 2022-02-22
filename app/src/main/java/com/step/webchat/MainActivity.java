@@ -3,11 +3,13 @@ package com.step.webchat;
 import androidx.appcompat.app.AppCompatActivity;
 
 import android.os.Bundle;
+import android.text.Editable;
 import android.util.Log;
 import android.widget.Button;
 import android.widget.EditText;
 import android.widget.LinearLayout;
 import android.widget.TextView;
+import android.widget.Toast;
 
 import java.io.InputStream;
 import java.net.URL;
@@ -64,19 +66,48 @@ public class MainActivity extends AppCompatActivity {
     };
 
     private final Runnable sendMessage = () -> {
-        boolean isOk = this.api.sendMessage("Mehoff", "Hello world");
+        Editable editable = editMessage.getText();
+        String messageText = editable.toString().trim();
 
-        if(isOk){
-            runOnUiThread(displayOK);
+        String author = "Mehoff";
 
-        } else {
-            runOnUiThread(displayError);
+        if(messageText.length() <= 0){
+            Toast.makeText(this, "Message is too short", Toast.LENGTH_SHORT);
+            return;
         }
+
+        // not good placement, but good for now
+
+        runOnUiThread(() -> {
+                    layoutMessages.removeAllViews();
+                }
+        );
+
+
+        new Thread (() -> {
+            ArrayList<Message> messages = this.api.sendMessage(author, messageText);
+
+            for(int i = 0; i < messages.size(); ++i){
+                TextView tv = createMessageView(messages.get(i));
+
+
+                runOnUiThread(() -> {
+                    layoutMessages.addView(tv);
+                });
+            }
+        }).start();
     };
 
     private void loadMessages(){
         // Todo: sort messages by date;
-        
+
+        // not good placement, but good for now
+
+        runOnUiThread(() -> {
+                    layoutMessages.removeAllViews();
+                }
+        );
+
         new Thread(() -> {
             ArrayList<Message> messages = api.getMessages();
 
