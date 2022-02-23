@@ -9,15 +9,18 @@ import android.text.Editable;
 import android.text.Html;
 import android.util.Log;
 import android.util.TypedValue;
+import android.view.View;
 import android.widget.Button;
 import android.widget.EditText;
 import android.widget.LinearLayout;
+import android.widget.ScrollView;
 import android.widget.TextView;
 import android.widget.Toast;
 
 import java.io.InputStream;
 import java.net.URL;
 import java.util.ArrayList;
+import java.util.Comparator;
 
 public class MainActivity extends AppCompatActivity {
 
@@ -25,6 +28,7 @@ public class MainActivity extends AppCompatActivity {
     private Button btnSend;
     private EditText editMessage;
     private LinearLayout layoutMessages;
+    private ScrollView scrollView;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -41,7 +45,7 @@ public class MainActivity extends AppCompatActivity {
             btnSend = findViewById(R.id.btnSend);
             editMessage = findViewById(R.id.editMessage);
             layoutMessages = findViewById(R.id.messagesLayout);
-
+            scrollView = findViewById(R.id.messagesScrollView);
 
             btnSend.setOnClickListener((v) -> {
                 new Thread(sendMessage).start();
@@ -87,26 +91,28 @@ public class MainActivity extends AppCompatActivity {
                 }
         );
 
-
         new Thread (() -> {
             ArrayList<Message> messages = this.api.sendMessage(author, messageText);
 
             for(int i = 0; i < messages.size(); ++i){
                 TextView tv = createMessageView(messages.get(i));
-
-
                 runOnUiThread(() -> {
                     layoutMessages.addView(tv);
                 });
             }
         }).start();
+
+        // Does not work for some reason
+        // Even in "runOnUiThread"
+        scrollView.post(new Runnable() {
+            @Override
+            public void run() {
+                scrollView.fullScroll(View.FOCUS_DOWN);
+            }
+        });
     };
 
     private void loadMessages(){
-        // Todo: sort messages by date;
-
-        // not good placement, but good for now
-
         runOnUiThread(() -> {
                     layoutMessages.removeAllViews();
                 }
@@ -114,6 +120,8 @@ public class MainActivity extends AppCompatActivity {
 
         new Thread(() -> {
             ArrayList<Message> messages = api.getMessages();
+
+            messages.sort(Comparator.comparingLong(m -> m.getMoment().getTime()));
 
             for(int i = 0; i < messages.size(); ++i){
                 TextView tv = createMessageView(messages.get(i));
@@ -136,6 +144,20 @@ public class MainActivity extends AppCompatActivity {
 
     // Todo: for now it creates only incoming message view, make a separation later
     private TextView createMessageView(Message message){
+
+        // Todo: change hardcoded nickname
+
+        TextView view = message.getAuthor().equals("Mehoff")
+                ? createOutgoingMessageView(message)
+                : createIncomingMessageView(message);
+
+        return view;
+
+    }
+
+
+    private TextView createOutgoingMessageView(Message message){
+
         StringBuilder sb = new StringBuilder();
 
         sb.append(message.getAuthor());
@@ -143,8 +165,46 @@ public class MainActivity extends AppCompatActivity {
         sb.append(message.getText());
 
         TextView textView = new TextView(this);
+        textView.setId(message.getId());
+        textView.setBackground(getDrawable(R.drawable.shape_message_outgoing));
+        textView.setLayoutParams(new LinearLayout.LayoutParams(LinearLayout.LayoutParams.MATCH_PARENT, LinearLayout.LayoutParams.WRAP_CONTENT));
+        textView.setPadding(pxToDp(10), pxToDp(4), pxToDp(14), pxToDp(10));
+        textView.setTextAlignment(View.TEXT_ALIGNMENT_VIEW_END);
+        textView.setTextColor(getColor(R.color.white));
+        textView.setTextSize((float)13.5);
+
+        runOnUiThread(() -> {
+
+            ConstraintLayout constraintLayout = findViewById(R.id.constraintLayout);
+
+            ConstraintSet constraintSet = new ConstraintSet();
+            constraintSet.clone(constraintLayout);
+            constraintSet.connect(textView.getId(), ConstraintSet.START, R.id.messagesLayout, ConstraintSet.START);
+            constraintSet.connect(textView.getId(), ConstraintSet.TOP, R.id.messagesLayout, ConstraintSet.TOP);
+
+            constraintSet.applyTo(constraintLayout);
+
+        });
+
+        textView.setText(Html.fromHtml("<b>" + message.getAuthor() + "</b>" +  "<br />" +
+                "<small>" + message.getText() + "</small>" + "<br />" +
+                "<small>" + message.getDateString() + "</small>"));
+
+        return textView;
+
+    }
+
+    private TextView createIncomingMessageView(Message message){
+        StringBuilder sb = new StringBuilder();
+
+        sb.append(message.getAuthor());
+        sb.append(": ");
+        sb.append(message.getText());
+
+        TextView textView = new TextView(this);
+        textView.setId(message.getId());
         textView.setBackground(getDrawable(R.drawable.shape_message_incoming));
-        textView.setLayoutParams(new LinearLayout.LayoutParams(pxToDp(200), LinearLayout.LayoutParams.WRAP_CONTENT));
+        textView.setLayoutParams(new LinearLayout.LayoutParams(LinearLayout.LayoutParams.MATCH_PARENT, LinearLayout.LayoutParams.WRAP_CONTENT));
         textView.setPadding(pxToDp(14), pxToDp(4), pxToDp(10), pxToDp(10));
         textView.setTextColor(getColor(R.color.white));
         textView.setTextSize((float)13.5);
@@ -168,22 +228,6 @@ public class MainActivity extends AppCompatActivity {
                 "<small>" + message.getDateString() + "</small>"));
 
         return textView;
-    }
 
-//
-//    android:layout_width="200dp" ok
-//    android:layout_height="wrap_content" ok
-//    android:background="@drawable/shape_message_incoming" ok
-//    android:lineSpacingExtra="2dp" ?
-//    android:paddingLeft="10dp" ok
-//    android:paddingTop="4dp" ok
-//    android:paddingRight="10dp" ok
-//    android:paddingBottom="10dp" ok
-//    android:text="Hi, How are you?" ok
-//    android:textColor="@color/black" ok
-//    android:textSize="13.5dp" ok
-//    app:layout_constraintStart_toStartOf="parent"
-//    app:layout_constraintTop_toTopOf="parent"
-//    app:layout_constraintWidth_max="wrap"
-//    app:layout_constraintWidth_percent="0.8"
+    }
 }
