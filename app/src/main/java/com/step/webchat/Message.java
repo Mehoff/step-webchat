@@ -1,5 +1,7 @@
 package com.step.webchat;
 
+import android.text.format.DateUtils;
+
 import java.text.ParseException;
 import java.text.SimpleDateFormat;
 import java.util.Date;
@@ -48,6 +50,14 @@ public class Message {
 
     public Date getMoment() {
         return moment;
+    }
+
+    public String getDateString(){
+        if(DateUtils.isToday(moment.getTime())){
+            return new SimpleDateFormat("H:mm").format(moment); // 9:00
+        } else {
+            return new SimpleDateFormat("MM-dd H:mm").format(moment); // 02-15 9:00
+        }
     }
 
     public void setMoment(Date moment) {

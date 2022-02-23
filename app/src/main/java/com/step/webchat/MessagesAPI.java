@@ -125,25 +125,4 @@ public class MessagesAPI {
             return null;
         }
     }
-
-//    private final Runnable makeRequest = (String url) -> {
-//        String contentBuffer;
-//        try{
-//            InputStream stream = new URL(url).openStream();
-//            StringBuilder sb = new StringBuilder();
-//            int sym;
-//            while((sym = stream.read()) != -1)
-//                sb.append((char) sym);
-//
-//            contentBuffer = new String(sb.toString().getBytes(StandardCharsets.ISO_8859_1), StandardCharsets.UTF_8);
-//
-//            runOnUiThread(parseContent);
-//        }
-//        catch (Exception ex){
-////            Log.e("loadCurrency()", ex.getMessage());
-////            runOnUiThread(() -> {
-////                Toast.makeText(MainActivity.this, "Failed to load currency, try again later", Toast.LENGTH_SHORT).show();
-////            });
-//        }
-//    };
 }

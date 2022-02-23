@@ -6,6 +6,7 @@ import androidx.constraintlayout.widget.ConstraintSet;
 
 import android.os.Bundle;
 import android.text.Editable;
+import android.text.Html;
 import android.util.Log;
 import android.util.TypedValue;
 import android.widget.Button;
@@ -144,8 +145,8 @@ public class MainActivity extends AppCompatActivity {
         TextView textView = new TextView(this);
         textView.setBackground(getDrawable(R.drawable.shape_message_incoming));
         textView.setLayoutParams(new LinearLayout.LayoutParams(pxToDp(200), LinearLayout.LayoutParams.WRAP_CONTENT));
-        textView.setPadding(pxToDp(10), pxToDp(4), pxToDp(10), pxToDp(10));
-        textView.setTextColor(getColor(R.color.black));
+        textView.setPadding(pxToDp(14), pxToDp(4), pxToDp(10), pxToDp(10));
+        textView.setTextColor(getColor(R.color.white));
         textView.setTextSize((float)13.5);
 
         runOnUiThread(() -> {
@@ -162,7 +163,10 @@ public class MainActivity extends AppCompatActivity {
 
         });
 
-        textView.setText(sb.toString());
+        textView.setText(Html.fromHtml("<b>" + message.getAuthor() + "</b>" +  "<br />" +
+                "<small>" + message.getText() + "</small>" + "<br />" +
+                "<small>" + message.getDateString() + "</small>"));
+
         return textView;
     }
 
