@@ -1,10 +1,13 @@
 package com.step.webchat;
 
 import androidx.appcompat.app.AppCompatActivity;
+import androidx.constraintlayout.widget.ConstraintLayout;
+import androidx.constraintlayout.widget.ConstraintSet;
 
 import android.os.Bundle;
 import android.text.Editable;
 import android.util.Log;
+import android.util.TypedValue;
 import android.widget.Button;
 import android.widget.EditText;
 import android.widget.LinearLayout;
@@ -121,6 +124,16 @@ public class MainActivity extends AppCompatActivity {
         }).start();
     }
 
+    private int pxToDp(int px){
+        int dpValue = (int) TypedValue.applyDimension(
+                TypedValue.COMPLEX_UNIT_DIP,
+                px,
+                MainActivity.this.getBaseContext().getResources().getDisplayMetrics());
+
+        return dpValue;
+    }
+
+    // Todo: for now it creates only incoming message view, make a separation later
     private TextView createMessageView(Message message){
         StringBuilder sb = new StringBuilder();
 
@@ -129,9 +142,44 @@ public class MainActivity extends AppCompatActivity {
         sb.append(message.getText());
 
         TextView textView = new TextView(this);
-        textView.setLayoutParams(new LinearLayout.LayoutParams(LinearLayout.LayoutParams.WRAP_CONTENT, LinearLayout.LayoutParams.WRAP_CONTENT));
-        textView.setText(sb.toString());
+        textView.setBackground(getDrawable(R.drawable.shape_message_incoming));
+        textView.setLayoutParams(new LinearLayout.LayoutParams(pxToDp(200), LinearLayout.LayoutParams.WRAP_CONTENT));
+        textView.setPadding(pxToDp(10), pxToDp(4), pxToDp(10), pxToDp(10));
+        textView.setTextColor(getColor(R.color.black));
+        textView.setTextSize((float)13.5);
 
+        runOnUiThread(() -> {
+
+            ConstraintLayout constraintLayout = findViewById(R.id.constraintLayout);
+
+            ConstraintSet constraintSet = new ConstraintSet();
+            constraintSet.clone(constraintLayout);
+
+            constraintSet.connect(textView.getId(), ConstraintSet.START, R.id.messagesLayout, ConstraintSet.START);
+            constraintSet.connect(textView.getId(), ConstraintSet.TOP, R.id.messagesLayout, ConstraintSet.TOP);
+
+            constraintSet.applyTo(constraintLayout);
+
+        });
+
+        textView.setText(sb.toString());
         return textView;
     }
+
+//
+//    android:layout_width="200dp" ok
+//    android:layout_height="wrap_content" ok
+//    android:background="@drawable/shape_message_incoming" ok
+//    android:lineSpacingExtra="2dp" ?
+//    android:paddingLeft="10dp" ok
+//    android:paddingTop="4dp" ok
+//    android:paddingRight="10dp" ok
+//    android:paddingBottom="10dp" ok
+//    android:text="Hi, How are you?" ok
+//    android:textColor="@color/black" ok
+//    android:textSize="13.5dp" ok
+//    app:layout_constraintStart_toStartOf="parent"
+//    app:layout_constraintTop_toTopOf="parent"
+//    app:layout_constraintWidth_max="wrap"
+//    app:layout_constraintWidth_percent="0.8"
 }
